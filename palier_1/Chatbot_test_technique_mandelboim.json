@@ -1,0 +1,303 @@
+{
+  "name": "Chatbot_test_technique_mandelboim",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "0daab2ca-fa75-4bf7-b12e-fe3925b47bfd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        80
+      ],
+      "id": "b9e4dc97-c47d-4690-8732-bca2f89fd59e",
+      "name": "Webhook",
+      "webhookId": "0daab2ca-fa75-4bf7-b12e-fe3925b47bfd"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/palier_1/faq.csv",
+        "options": {
+          "fileExtension": ".csv"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -112
+      ],
+      "id": "9eed7ecf-e494-4fa0-83dd-e5bdb1ce7909",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/palier_1/catalogue_partiel.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        96
+      ],
+      "id": "4ec037b1-2449-44d5-ac2e-258423a1d438",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/palier_1/prompt.md",
+        "options": {
+          "dataPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        272
+      ],
+      "id": "ea19ef07-256c-40ab-b4d6-4151cfa1b826",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        272
+      ],
+      "id": "e152246f-cb6a-4c3c-9d6a-4c5f8480ca4c",
+      "name": "Extract from File2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$node[\"Webhook\"].json[\"query\"][\"message\"]}}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{$node[\"Extract from File2\"].json[\"text\"]}}"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=נתוני FAQ:\n{{$node[\"fich1\"].json[\"data\"]}}\n\nנתוני קטלוג:\n{{$node[\"fich2\"].json[\"data\"]}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        272,
+        -16
+      ],
+      "id": "3dbe9b8a-81eb-40c0-a0f1-576c475a68cc",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        176
+      ],
+      "id": "b354a401-f542-4516-9ce5-fcd9cf8acb58",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "otDxORc29OsQBhR4",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        256,
+        176
+      ],
+      "id": "62940eeb-8ce1-4e3b-beb1-051593aa635a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -112
+      ],
+      "id": "0946a4fb-e447-494c-826f-997905c492e3",
+      "name": "fich1"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "893ab7fe-a69f-4356-91d5-1a027ff17d2a",
+      "name": "fich2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "fich1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "fich2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fich1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fich2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "84fd2882-a8f0-4102-8b7f-5316e61a087b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8d6adbf66c6fb8522ac521021b303fbb197f6f884beb4ec41276c745f77266f4"
+  },
+  "id": "GDJc0gbCBUbZ8Ng1",
+  "tags": []
+}
